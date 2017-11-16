@@ -1,4 +1,7 @@
 # coding:utf-8
+# http://neuro-educator.com/rl1/
+# you need sudo pip install gym
+
 # [0]import libraly
 import gym  #cartpole
 from gym import wrappers  #save a pic of gym
