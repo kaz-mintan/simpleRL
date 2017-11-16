@@ -16,12 +16,13 @@ def bins(clip_min, clip_max, num):
 
 # c nvert描画フラグ each values to discrete values
 def digitize_state(observation):
-    cart_pos, cart_v, pole_angle, pole_v = observation
+    cart_pos, cart_v, pole_angle = observation
+    #cart_pos, cart_v, pole_angle, pole_v = observation
     digitized = [
         np.digitize(cart_pos, bins=bins(-2.4, 2.4, num_dizitized)),
         np.digitize(cart_v, bins=bins(-3.0, 3.0, num_dizitized)),
         np.digitize(pole_angle, bins=bins(-0.5, 0.5, num_dizitized)),
-        np.digitize(pole_v, bins=bins(-2.0, 2.0, num_dizitized))
+        #np.digitize(pole_v, bins=bins(-2.0, 2.0, num_dizitized))
     ]
     return sum([x * (num_dizitized**i) for i, x in enumerate(digitized)])
 
@@ -86,7 +87,7 @@ for episode in range(num_episodes):  #repeat for number of trials
         #observation, reward, done, info = env.step(action)
         observation = sensor_input_dummy(sensor_array)
         facial_expression = facial_input_dummy()
-        reward = calc_reward_dummy(facial)
+        reward = calc_reward_dummy(facial_expression)
         done=done_dummy()
         #info=1
 
