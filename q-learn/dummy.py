@@ -28,6 +28,18 @@ def actuator_test(motor_array):
     present_angl+=direction*velosity
     return present_angl
 
+class Q_func_dummy():
+    def __init__(self):
+        self.name=""
+
+    def qvalue(self, list_weight, state, action):
+        self.q_value=randint(50)
+        return self.q_value
+
+    def qmax(self, list_weight, state, action):
+        self.qmax=randint(50)
+        return self.qmax
+
 if __name__ == '__main__':
     sensor_array=np.array([1,0.5,0.2])
     facial_array=np.array([1,0.5,0.2,0.2,0.1])
@@ -37,3 +49,11 @@ if __name__ == '__main__':
     print(done_dummy())
     motor_array=np.array([100,1,0.2])
     print("motor",actuator_test(motor_array))
+
+    list_weight=np.array([1,2,3])
+    action=np.array([0.1,0.2,0.3])
+
+    q_func=Q_func_dummy()
+    value=q_func.qvalue(list_weight,sensor_array,action)
+    print("q_value", value)
+    print("q_max", q_func.qmax(list_weight,sensor_array,action))
