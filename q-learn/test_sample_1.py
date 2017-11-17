@@ -1,6 +1,6 @@
 # coding:utf-8
 # http://neuro-educator.com/rl1/
-# you need sudo pip install gym
+# you may need sudo pip install gym
 
 # [0]import libraly
 import gym  #cartpole
@@ -41,6 +41,7 @@ def get_action(next_state, episode):
 def update_Qtable(q_table, state, action, reward, next_state):
     gamma = 0.99
     alpha = 0.5
+    #next_Max_Q=max(q_table[next_state][0],q_table[next_state][1] )
     next_Max_Q=max(q_table[next_state][0],q_table[next_state][1] )
     q_table[state, action] = (1 - alpha) * q_table[state, action] +\
             alpha * (reward + gamma * next_Max_Q)
@@ -64,16 +65,16 @@ final_x = np.zeros((num_episodes, 1))  #contains a value of x (t=200) after lear
 islearned = 0  #flg of finishing learning
 isrender = 0  #flg of drawing
 
-
 # [5] main tourine
-
 sensor_array=np.array([1,0.5,0.2])
+list_weight=np.array([1,2,3])
 for episode in range(num_episodes):  #repeat for number of trials
     # initialize enviroment
     observation = sensor_input_dummy(sensor_array)
     #observation = env.reset()
     state = digitize_state(observation)
     #TODO
+    #action = np.argmax(q_table[state])
     action = np.argmax(q_table[state])
     episode_reward = 0
 
