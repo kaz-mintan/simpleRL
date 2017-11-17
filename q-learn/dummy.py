@@ -22,6 +22,12 @@ def done_dummy():
     done_bool = randint(100)%2
     return done_bool
 
+def actuator_test(motor_array):
+    present_angl, direction, velosity = motor_array
+    #for i in range():
+    present_angl+=direction*velosity
+    return present_angl
+
 if __name__ == '__main__':
     sensor_array=np.array([1,0.5,0.2])
     facial_array=np.array([1,0.5,0.2,0.2,0.1])
@@ -29,4 +35,5 @@ if __name__ == '__main__':
     print("facial",facial_input_dummy())
     print("reward",calc_reward_dummy(facial_input_dummy()))
     print(done_dummy())
-
+    motor_array=np.array([100,1,0.2])
+    print("motor",actuator_test(motor_array))
