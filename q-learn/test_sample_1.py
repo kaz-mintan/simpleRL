@@ -1,10 +1,9 @@
 # coding:utf-8
 # http://neuro-educator.com/rl1/
-# you may need sudo pip install gym
 
 # [0]import libraly
-import gym  #cartpole
-from gym import wrappers  #save a pic of gym
+#import gym  #cartpole
+#from gym import wrappers  #save a pic of gym
 import numpy as np
 import time
 from dummy import *
@@ -50,15 +49,15 @@ def update_Qtable(q_table, state, action, reward, next_state):
 
 
 # [4] start main function. set parameters
-env = gym.make('CartPole-v0')
+#env = gym.make('CartPole-v0')
 max_number_of_steps = 200  #number of steps for 1 trial
 num_consecutive_iterations = 100  #mean of number of trial to use for evaluation of finish of learning
 num_episodes = 1000  #number of all trials
 goal_average_reward = 50  #boder line of rewards to stop learning
 # state is digitized/devided into 6 parts (there is 4 variables) and making q-table (as q-function)
 num_dizitized = 6  #number of digitized/devided
-q_table = np.random.uniform(
-    low=-1, high=1, size=(num_dizitized**4, env.action_space.n))
+q_table = np.random.uniform(    low=-1, high=1, size=(num_dizitized**4, 2))
+#low=-1, high=1, size=(num_dizitized**4, env.action_space.n))
 
 total_reward_vec = np.zeros(num_consecutive_iterations)  #contains rewards of each trial
 final_x = np.zeros((num_episodes, 1))  #contains a value of x (t=200) after learning
