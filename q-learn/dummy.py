@@ -36,9 +36,14 @@ class Q_func_dummy():
         self.q_value=randint(50)
         return self.q_value
 
-    def qmax(self, list_weight, state, action):
+    def qmax_action(self, list_weight, state, action):
         self.qmax=randint(50)
-        return self.qmax
+        self.max_action=np.random.uniform(low=0,high=1,size=action.size)
+        return self.max_action
+
+def digitize_action(action):
+    digitized = np.digitize(action, bins=bins(0, 1, num_dizitized)),
+    return digitized
 
 if __name__ == '__main__':
     sensor_array=np.array([1,0.5,0.2])
@@ -56,4 +61,4 @@ if __name__ == '__main__':
     q_func=Q_func_dummy()
     value=q_func.qvalue(list_weight,sensor_array,action)
     print("q_value", value)
-    print("q_max", q_func.qmax(list_weight,sensor_array,action))
+    print("qmax_action", q_func.qmax_action(list_weight,sensor_array,action))
