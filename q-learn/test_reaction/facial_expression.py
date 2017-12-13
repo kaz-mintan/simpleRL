@@ -10,81 +10,78 @@ def prob_output(output_a,output_b):
     else:
         return output_b
 
-def evaluator():
-    
-    return eval_face
-
 def assumed_face(present_face, limit_max, limit_min):
     array_size = present_face.size
-    face_pt_array = np.array([
-            present_face[0],
-            present_face[0]+present_face[1],
-            present_face[0]+present_face[1]+present_face[2],
-            present_face[0]+present_face[1]+present_face[2]+present_face[3],
-            present_face[0]+present_face[1]+present_face[2]+present_face[3]+present_face[4]]
-            )
+    face_pt_array = present_face
+
     selected_num = present_face.argmax()
     #[1] choice the type of increasing facial expression
-    #selected_num = random.randint(0,4)
-    print(selected_num)
-    dt_face=np.random.uniform(low=-5,high=5,size=1)
+    before_face = face_pt_array[selected_num]
+    dt_face=np.random.randint(-5,5,1)
     face_pt_array[selected_num]+=dt_face
 
-    print('selected, dt_face',selected_num,dt_face)
-    print('first_array',face_pt_array)
-
-    if face_pt_array[selected_num]-face_pt_array[selected_num-1] >= limit_max:
-        #face_pt_array[selected_num]-=dt_face
-        face_pt_array[selected_num]=limit_max
+    if face_pt_array[selected_num] >= limit_max:
+        face_pt_array[selected_num]=prob_output(limit_max,face_pt_array[selected_num]-dt_face)
     elif face_pt_array[selected_num]-face_pt_array[selected_num-1] <= limit_min:
-        #face_pt_array[selected_num]+=dt_face
-        face_pt_array[selected_num]+=dt_face
+        face_pt_array[selected_num]=prob_output(limit_min,face_pt_array[selected_num]-dt_face)
+
+    dt_face = face_pt_array[selected_num]-before_face
 
     #[2] devide the remaining value of facial expression
-    max_val = abs(dt_face)
-    dev_num=np.zeros(array_size-1)
+    dev_num=np.zeros(array_size)
     dev_array=np.zeros(array_size-1)
-    for i in range(array_size-1):
-        dev_num[i]=random.uniform(0,max_val)
-    dev_sort=np.sort(dev_num)
 
-    sign = dt_face/max_val
+    if dt_face!=0:
+        max_val = abs(dt_face)
+        #print('dt_face',dt_face)
+        dev_num[array_size-1]=max_val
 
-    dev_array[0]=sign*(dev_sort[1]-dev_sort[0])
+        if max_val < array_size:
+            dev_num[1:max_val]=random.sample(xrange(max_val), max_val-1)
+        else:
+            dev_num[1:array_size-1]=random.sample(xrange(max_val), array_size-2)
 
-    for j in range(1,array_size-1):
-        dev_array[j]=(dt_face/max_val)*(dev_sort[j]-dev_sort[j-1])
+        dev_sort=np.sort(dev_num)
+        #print('dev_sort',dev_sort)
+
+        sign = dt_face/max_val
+
+        dev_array[0]=sign*(dev_sort[1]-dev_sort[0])
+
+        for j in range(1,array_size-1):
+            dev_array[j]=(dt_face/max_val)*(dev_sort[j+1]-dev_sort[j])
 
 
     count = 0
     for face_num in range(0,array_size):
         if face_num!=selected_num:
             face_pt_array[face_num]-=dev_array[count]
-            print('dev_array[',count,']',dev_array[count],'face_pt_array[',face_num,']',face_pt_array[face_num])
+            if face_pt_array[face_num]<limit_min:
+                diff = limit_min - face_pt_array[face_num]
+                face_pt_array[face_num]=limit_min
+                face_pt_array[selected_num]-=diff
+
+            if face_pt_array[face_num]>limit_max:
+                print('up')
+                diff = face_pt_array[face_num]-limit_max
+                face_pt_array[face_num]=limit_max
+                face_pt_array[selected_num]-=diff
+
             count=count+1
 
-    print('face_pt_array',face_pt_array)
-
-    assumed_face = np.array([
-            face_pt_array[0],
-            face_pt_array[1]-face_pt_array[0],
-            face_pt_array[2]-face_pt_array[1],#-face_pt_array[0],
-            face_pt_array[3]-face_pt_array[2],#-face_pt_array[1]-face_pt_array[0],
-            face_pt_array[4]-face_pt_array[3]]#-face_pt_array[2]-face_pt_array[1]-face_pt_array[0]]
-     )
-    print('last face array', assumed_face)
-
-    return assumed_face
+    return face_pt_array
 
 if __name__ == '__main__':
-    loop_val = 2 
+    loop_val = 1000
     face_val = np.array([100,0,0,0,0])
     face_max = 100
     face_min = 0
     facial=np.zeros((loop_val,5))
     for i in range(loop_val):
         facial[i,:]=face_val
-        print(face_val)
+        if face_val.sum()>100:
+            print(face_val, face_val.sum())
+            ref = raw_input()
         face_val= assumed_face(face_val,face_max,face_min)
 
     np.savetxt('test_face.csv',face_val,delimiter=',')
