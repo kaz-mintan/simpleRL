@@ -4,16 +4,11 @@
 import numpy as np
 import time
 from dummy import *
+from q_function import *
+from reward_function import *
 
-# [1]define Q-function
-def q_function(state, action, weights):
-    ir_sensor, facial, pwm = state
-    ir_weight, facial_weight, pwm_weight = weights
-    q_value=np.dot(ir_sensor,ir_weight)
-        +np.dot(facial,facial_weight)
-        +np.dot(pwm,pwm_weight)
 
-    return q_value
+class Q_learning():
 
 # [2]function which determine action a(t)
 def get_action(q_table, next_state, episode, action):
@@ -27,7 +22,8 @@ def get_action(q_table, next_state, episode, action):
     return next_action
 
 # [3]function which update Q-table
-def update_Qtable(q_table, state, action, reward, next_state):
+#def update_Qtable(q_table, state, action, reward, next_state):
+def update_q_func(q_weights, state, action, reward, next_state):
     gamma = 0.99
     alpha = 0.5
     next_Max_Q=max(q_table[next_state])
@@ -36,35 +32,36 @@ def update_Qtable(q_table, state, action, reward, next_state):
 
     return q_table
 
+# [4] start main function. set parameters
 def q_learning(sensor_array):
-    # [4] start main function. set parameters
-    action_array=np.array([0.1,0.2,0.3])
-    max_number_of_steps = 100  #number of steps for 1 trial
-    num_consecutive_iterations = 100  #mean of number of trial to use for evaluation of finish of learning
+    #[0] initialize
+    action_num = 1
+    ir_num = 1
+    facial_num = 5
+    other_teensy_num = 3
+
+    state_number = ir_num + facial_num + other_teensy_num
+
+    q_function_dim = 5
     num_episodes = 1000  #number of all trials
-    goal_average_reward = 50  #boder line of rewards to stop learning
-    q_table = np.random.uniform(low=-1, high=1, size=4)
-    #４じすぷらいんほかんてきな
+
+    action_array=np.zeros(action_num)
+    q_weight = np.random.rand((q_function_dim, state_number))
 
     total_reward_vec = np.zeros(num_consecutive_iterations)  #contains rewards of each trial
-    final_x = np.zeros((num_episodes, 1))  #contains a value of x (t=200) after learning
     islearned = 0  #flg of finishing learning
     isrender = 0  #flg of drawing
 
     # [5] main tourine
-    #sensor_array=np.array([1,0.5,0.2])
-    list_weight=np.array([1,2,3])
     for episode in range(num_episodes):  #repeat for number of trials
         #initialize enviroment
-        observation = sensor_input_dummy(sensor_array)
-        state = digitize_state(observation)
+        observation = get_sensor(sensor_array)
         #TODO
-        action = np.argmax(q_table[state])
+        action = q_max(state, q_weight)
         #ここでアクションする
 
         facial_expression = get_facial()
-        reward = calc_reward_dummy(facial_expression)
-        done=done_dummy()
+        reward = calc_reward(facial_expression)
 
         observation = sensor_input_dummy(sensor_array)
         next_state = digitize_state(observation)  #convert s_{t+1} to digitized value
