@@ -19,6 +19,9 @@ def calc_q_reward(observation, weight):
     return reward
     #print(reward)
 
+def dif_q_func(state, action, weight):
+    #return differential value
+
 def q_function(state, action, weight):
     observation = np.hstack((state, action))
     if observation.size != weight.shape[0]:
