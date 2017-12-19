@@ -24,5 +24,5 @@ def sim_traj(pwm, time_range):
     return trajectory
 
 
-traj=sim_traj(50,100)
+traj=sim_traj(50,200)
 np.savetxt('test_traj.csv',traj,delimiter=',')
