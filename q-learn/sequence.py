@@ -58,3 +58,5 @@ if __name__ == "__main__" :
     reward = calc_reward(state, state_predict, time_window, mode)
     print('reward',reward)
 
+    feature_state = seq2feature(state)
+    print(feature_state)
