@@ -36,12 +36,13 @@ if __name__ == "__main__" :
     argvs = sys.argv  # コマンドライン引数を格納したリストの取得
 
     time_window = 10
-    num_face = 100
-    num_ir = 100
+    num_face = 2
+    num_ir = 2
 
     mode = argvs[1]
 
     state = np.random.uniform(low=0,high=1,size=(num_face*5+num_ir,time_window))
+    print('state',state)
     state_predict = np.random.uniform(low=0,high=1,size=(num_face*5+num_ir,time_window))
     reward = calc_reward(state,state_predict, mode)
     print('reward',reward)
