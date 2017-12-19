@@ -9,15 +9,16 @@ import numpy as np
 import time
 
 # reward function
-def calc_reward(state, state_hat, t_sample, mode):
+def calc_reward(state, state_predict, mode):
     # coefficient
     c = np.array([1,1,1,-1,-1]) #for delta mode
     h = np.array([1,1,1,-1,-1]) #for heuristic mode
+    reward = 0
 
     # extract face array (must be time sequence data)
     face = state[0:5,:] #in numpy, the 5 of the 0:5 is not included
     face_post = face[1:] #for delta mode
-    face_hat = state_hat[0:5,:] #for predict mode
+    face_predict = state_predict[0:5,:] #for predict mode
 
     if mode == 'delta':
         # calc delta facial
@@ -34,14 +35,15 @@ def calc_reward(state, state_hat, t_sample, mode):
 
     elif mode == 'predict':
         # calc prediction error
-        e_face = face_hat - face
+        e_face = face_predict - face
         reward = np.mean(e_face)
         #reward = np.sum(e_face)
 
     return reward
 
-def sequence2feature(state, t_sample):
-
+def sequence2feature(state):
+    #TODO be more complex?! Whats' the feature?
+    state_feature = np.mean(state, axis=1)
     return state_feature
 
 # [2]function which determine action a(t)
