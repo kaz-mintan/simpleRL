@@ -41,7 +41,7 @@ def calc_reward(state, state_predict, mode):
 
     return reward
 
-def sequence2feature(state):
+def seq2feature(state):
     #TODO be more complex?! Whats' the feature?
     state_feature = np.mean(state, axis=1)
     return state_feature
@@ -50,7 +50,6 @@ def sequence2feature(state):
 #def get_action(next_state, episode):
 def get_action(next_state):
     #epsilon-greedy
-    #epsilon = 0.5 * (1 / (episode + 1))
     epsilon = 0.5
     if epsilon <= np.random.uniform(0, 1):
         next_action = np.argmax(q_table[next_state])
@@ -70,7 +69,8 @@ def update_Qtable(q_table, state, action, reward, next_state):
 
 
 # [4] start main function. set parameters
-max_number_of_steps = 200  #number of time window
+#max_number_of_steps = 200  #number of time window
+t_window = 200  #number of time window
 #num_consecutive_iterations = 100  #mean of number of trial to use for evaluation of finish of learning
 num_episodes = 2000  #number of all trials
 
@@ -89,23 +89,26 @@ q_table = np.random.uniform(
 # [5] main tourine
 for episode in range(num_episodes):  #repeat for number of trials
     # initialize enviroment
-    #state = digitize_state(observation)
-    state = np.hstack((get_face(), get_ir()))#TODO#return 
+    state = np.zeros((num_face*5+num_ir,t_window))
+
+    state[:,0] = np.hstack((get_face(), get_ir()))#TODO#return 
     action = np.argmax(q_table[state])
 
-    for t in range(max_number_of_steps):  #roup for 1 time window
-        next_state = np.hstack((get_face(),get_ir()))
+
+    for t in range(1,t_window):  #roup for 1 time window
+        #next_state[t] = np.hstack((get_face(),get_ir()))
+        state[:,t] = np.hstack((get_face(),get_ir()))
 
         # calcurate s_{t+1}, r_{t} etc based on selected/conducted action
-        reward = calc_reward(next_state) #TODO how to calc?
+        reward = calc_reward(state[:,t]) #TODO how to calc?
 
         # calcurate s_{t+1} and update q-table(as q-function)
-        q_table = update_Qtable(q_table, state, action, reward, next_state)
+        q_table = update_Qtable(q_table, state[:,t-1], action, reward, next_state[:,t])
 
         # evaluate the next action a_{t+1}
         action = get_action(next_state)    # a_{t+1} 
 
-        state = next_state
+        #state = next_state
 
         # processing of end
         if done:
