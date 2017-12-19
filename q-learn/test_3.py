@@ -3,6 +3,8 @@
 
 import numpy as np
 from sequence import *
+from hand_motion import *
+from dummy_evaluator import *
 
 # [2]function which determine action a(t)
 def get_action(next_state):
@@ -25,42 +27,61 @@ def update_Qtable(q_table, state, action, reward, next_state):
     return q_table
 
 # [4] start main function. set parameters
-t_window = 200  #number of time window
-num_episodes = 2000  #number of all trials
+t_window = 30  #number of time window
+num_episodes = 20  #number of all trials
+
+type_face = 5
+type_ir = 1
 
 num_action = 60 #deg
 num_face = 100 #%
 num_ir = 100 #mm
 
-q_table = np.random.uniform(
-    low=0, high=1,
-    size=(num_face*5+num_ir, num_action))
+q_table = np.random.uniform(low=0, high=1, size=(num_face*5+num_ir, num_action))
 
 # [5] main tourine
+
+#state = np.zeros((num_face*5+num_ir,t_window))
+state = np.zeros((type_face+type_ir,t_window))
+state_mean = np.zeros((num_face*5+num_ir,num_episodes))
+action = np.zeros(num_episodes)
+reward = np.zeros(num_episodes)
+
+state[:,0] = np.array([100,0,0,0,0,30])
+#print('state_0',state[:,0])
+#action[0] = np.argmax(q_table[state])#TODO not enough
+action[0] = np.random.uniform(0,70)#TODO not enough
+
 for episode in range(num_episodes):  #repeat for number of trials
     # initialize enviroment
-    state = np.zeros((num_face*5+num_ir,t_window))
-    action = np.zeros(num_episodes)
-    reward = np.zeros(num_episodes)
 
-    mode = 'predict'
+    mode = 'heuristic'
 
-    state[:,0] = np.hstack((get_face(), get_ir()))#TODO#return 
-    action[0] = np.argmax(q_table[state])
+    if episode == 0:
+        #state[:,0] = np.array([100,0,0,0,0,30])
+        state[:,0] = np.array([100,0,0,0,0,30])
+    else:
+        state[:,0] = before_state
+
 
     for t in range(1,t_window):  #roup for 1 time window
         #next_state[t] = np.hstack((get_face(),get_ir()))
-        state[:,t] = np.hstack((get_face(),get_ir()))
+        state[:,t] = np.hstack((get_face(action[episode],'happy'),get_ir(state[type_face,t-1])))
+        #print(np.hstack((get_face(action[episode],'happy'),get_ir(state[type_face,t-1]))))
 
-        # calcurate s_{t+1}, r_{t} etc based on selected/conducted action
-        reward[t-1] = calc_reward(state[:,t],mode) #TODO how to calc?
+    state_mean[episode]=seq2feature(state)
+    # calcurate s_{t+1}, r_{t} etc based on selected/conducted action
+    reward[episode] = calc_reward(state, state, t_window, mode)
 
-        # calcurate s_{t+1} and update q-table(as q-function)
-        q_table = update_Qtable(q_table, state[:,t-1], action[t], reward[t-1], state[:,t])
+    # calcurate s_{t+1} and update q-table(as q-function)
+    #q_table = update_Qtable(q_table, state[:,t-1], action[t], reward[t-1], state[:,t])
+    if episode>0:
+        q_table = update_Qtable(q_table, state_mean[:,episode-1], action[episode], reward[episode-1], state_mean[:,episode])
 
-        # evaluate the next action a_{t+1}
-        #action[t] = get_action(next_state)    # a_{t+1} 
-        action[t] = get_action(state[:,t])    # a_{t+1} 
+    # evaluate the next action a_{t+1}
+    #action[t] = get_action(next_state)    # a_{t+1} 
+    action[episode] = get_action(state_mean[:,episode])    # a_{t+1} 
+    before_state = state[:,t_window]
 
-    np.savetxt('action_theta.csv', action, delimiter=",")
-    np.savetxt('reward_seq.csv', rewards, delimiter=",")
+np.savetxt('action_pwm.csv', action, delimiter=",")
+np.savetxt('reward_seq.csv', rewards, delimiter=",")
