@@ -2,7 +2,6 @@
 # http://neuro-educator.com/rl1/
 
 import numpy as np
-import time
 
 # reward function
 def calc_reward(state, state_predict, mode):
@@ -64,11 +63,6 @@ num_ir = 100 #mm
 q_table = np.random.uniform(
     low=0, high=1,
     size=(num_face*5+num_ir, num_action))
-
-#total_reward_vec = np.zeros(num_consecutive_iterations)  #contains rewards of each trial
-#final_x = np.zeros((num_episodes, 1))  #contains a value of x (t=200) after learning
-#islearned = 0  #flg of finishing learning
-#isrender = 0  #flg of drawing
 
 # [5] main tourine
 for episode in range(num_episodes):  #repeat for number of trials
