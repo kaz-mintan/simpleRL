@@ -36,12 +36,14 @@ def get_face(theta, target_type):
         #print('dev',dev_sort)
         for i in range(num_face):
             if i!=num:
-                dummy_face[i]=dev[t+1]-dev[t]
+                dummy_face[i]=dev_sort[t+1]-dev_sort[t]
                 t+=1
 
     return dummy_face
 
-for theta in range(40):
-    face=get_face(theta,'happy')
-    print(face)
+if __name__ == '__main__':
+
+    for theta in range(40):
+        face=get_face(theta,'happy')
+        print(face)
 
