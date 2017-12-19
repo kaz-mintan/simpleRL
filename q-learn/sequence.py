@@ -22,21 +22,16 @@ def calc_reward(state, state_predict, time_window, mode):
     #return sum([x * (num_dizitized**i) for i, x in enumerate(digitized)])
     if mode == 'delta':
         c_face=np.zeros((num_face,time_window-1))
-        #print('c_face',c_face)
-        #print('face_post',face_post)
-        #print('face_trim',face[:,:time_window-1])
-        #print('face',face)
         d_face = face_post - face[:,:time_window-2]
-        #print('d_face',d_face)
         for face_type in range(num_face):
             c_face[face_type,:]=c[face_type]*d_face[face_type,:]
-        #print('c_face',c_face)
-        #reward = np.mean(np.dot(c,(d_face[:,t] for t in range(time_window-2))),axis=1)
         reward = np.mean(c_face)
 
     elif mode == 'heuristic':
-        #reward = np.mean(np.dot(h,face),axis=1)
-        reward = np.mean(np.dot(h,face),axis=1)
+        h_face=np.zeros((num_face,time_window))
+        for face_type in range(num_face):
+            h_face[face_type,:]=h[face_type]*face[face_type,:]
+        reward = np.mean(h_face)
 
     elif mode == 'predict':
         e_face = face_predict - face
@@ -58,8 +53,8 @@ if __name__ == "__main__" :
     state = np.random.uniform(low=0,high=1,size=(num_face+num_ir,time_window))
     #print('state',state)
     state_predict = np.random.uniform(low=0,high=1,size=(num_face+num_ir,time_window))
-    #Jprint('state_predict',state_predict)
+    #print('state_predict',state_predict)
 
-    reward = calc_reward(state,state_predict, time_window, mode)
+    reward = calc_reward(state, state_predict, time_window, mode)
     print('reward',reward)
 
