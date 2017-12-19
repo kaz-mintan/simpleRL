@@ -8,6 +8,41 @@
 import numpy as np
 import time
 
+# reward function
+def calc_reward(state, state_hat, t_sample, mode):
+    # coefficient
+    c = np.array([1,1,1,-1,-1]) #for delta mode
+    h = np.array([1,1,1,-1,-1]) #for heuristic mode
+
+    # extract face array (must be time sequence data)
+    face = state[0:5,:] #in numpy, the 5 of the 0:5 is not included
+    face_post = face[1:] #for delta mode
+    face_hat = state_hat[0:5,:] #for predict mode
+
+    if mode == 'delta':
+        # calc delta facial
+        d_face = face_post - face[:t_sample-1]
+        reward = np.mean(np.dot(c,d_face),axis=1)
+        #reward = np.sum(np.dot(c,d_face),axis=1)
+        #reward = np.dot(c,np.mean(d_face),axis=1)
+
+    elif mode == 'heuristic':
+        # calc in a heuristic manner
+        #reward = np.dot(h,np.mean(face,axis=1))
+        reward = np.mean(np.dot(h,face),axis=1))
+        #reward = np.sum(np.dot(h,face),axis=1))
+
+    elif mode == 'predict':
+        # calc prediction error
+        e_face = face_hat - face
+        reward = np.mean(e_face)
+        #reward = np.sum(e_face)
+
+    return reward
+
+def sequence2feature(state, t_sample):
+
+    return state_feature
 
 # [2]function which determine action a(t)
 #def get_action(next_state, episode):
@@ -25,7 +60,6 @@ def get_action(next_state):
 def update_Qtable(q_table, state, action, reward, next_state):
     gamma = 0.99
     alpha = 0.5
-    #next_Max_Q=max(q_table[next_state][0],q_table[next_state][1] )
     next_Max_Q=np.argmax(q_table[next_state])
     q_table[state, action] = (1 - alpha) * q_table[state, action] +\
             alpha * (reward + gamma * next_Max_Q)
@@ -34,11 +68,10 @@ def update_Qtable(q_table, state, action, reward, next_state):
 
 
 # [4] start main function. set parameters
-#max_number_of_steps = 200  #number of steps for 1 trial
 max_number_of_steps = 200  #number of time window
 #num_consecutive_iterations = 100  #mean of number of trial to use for evaluation of finish of learning
 num_episodes = 2000  #number of all trials
-#goal_average_reward = 195  #boder line of rewards to stop learning
+
 num_action = 60 #deg
 num_face = 100 #%
 num_ir = 100 #mm
