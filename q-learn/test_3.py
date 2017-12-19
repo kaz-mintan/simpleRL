@@ -1,10 +1,6 @@
 # coding:utf-8
 # http://neuro-educator.com/rl1/
-# you need sudo pip install gym
 
-# [0]import libraly
-#import gym  #cartpole
-#from gym import wrappers  #save a pic of gym
 import numpy as np
 import time
 
@@ -21,33 +17,23 @@ def calc_reward(state, state_predict, mode):
     face_predict = state_predict[0:5,:] #for predict mode
 
     if mode == 'delta':
-        # calc delta facial
         d_face = face_post - face[:t_sample-1]
         reward = np.mean(np.dot(c,d_face),axis=1)
-        #reward = np.sum(np.dot(c,d_face),axis=1)
-        #reward = np.dot(c,np.mean(d_face),axis=1)
 
     elif mode == 'heuristic':
-        # calc in a heuristic manner
-        #reward = np.dot(h,np.mean(face,axis=1))
         reward = np.mean(np.dot(h,face),axis=1))
-        #reward = np.sum(np.dot(h,face),axis=1))
 
     elif mode == 'predict':
-        # calc prediction error
         e_face = face_predict - face
         reward = np.mean(e_face)
-        #reward = np.sum(e_face)
 
     return reward
 
 def seq2feature(state):
-    #TODO be more complex?! Whats' the feature?
     state_feature = np.mean(state, axis=1)
     return state_feature
 
 # [2]function which determine action a(t)
-#def get_action(next_state, episode):
 def get_action(next_state):
     #epsilon-greedy
     epsilon = 0.5
@@ -67,16 +53,14 @@ def update_Qtable(q_table, state, action, reward, next_state):
 
     return q_table
 
-
 # [4] start main function. set parameters
-#max_number_of_steps = 200  #number of time window
 t_window = 200  #number of time window
-#num_consecutive_iterations = 100  #mean of number of trial to use for evaluation of finish of learning
 num_episodes = 2000  #number of all trials
 
 num_action = 60 #deg
 num_face = 100 #%
 num_ir = 100 #mm
+
 q_table = np.random.uniform(
     low=0, high=1,
     size=(num_face*5+num_ir, num_action))
@@ -90,43 +74,27 @@ q_table = np.random.uniform(
 for episode in range(num_episodes):  #repeat for number of trials
     # initialize enviroment
     state = np.zeros((num_face*5+num_ir,t_window))
+    action = np.zeros(num_episodes)
+    reward = np.zeros(num_episodes)
+
+    mode = 'predict'
 
     state[:,0] = np.hstack((get_face(), get_ir()))#TODO#return 
-    action = np.argmax(q_table[state])
-
+    action[0] = np.argmax(q_table[state])
 
     for t in range(1,t_window):  #roup for 1 time window
         #next_state[t] = np.hstack((get_face(),get_ir()))
         state[:,t] = np.hstack((get_face(),get_ir()))
 
         # calcurate s_{t+1}, r_{t} etc based on selected/conducted action
-        reward = calc_reward(state[:,t]) #TODO how to calc?
+        reward[t-1] = calc_reward(state[:,t],mode) #TODO how to calc?
 
         # calcurate s_{t+1} and update q-table(as q-function)
-        q_table = update_Qtable(q_table, state[:,t-1], action, reward, next_state[:,t])
+        q_table = update_Qtable(q_table, state[:,t-1], action[t], reward[t-1], state[:,t])
 
         # evaluate the next action a_{t+1}
-        action = get_action(next_state)    # a_{t+1} 
+        #action[t] = get_action(next_state)    # a_{t+1} 
+        action[t] = get_action(state[:,t])    # a_{t+1} 
 
-        #state = next_state
-
-        # processing of end
-        if done:
-            print('%d Episode finished after %f time steps / mean %f' %
-                  (episode, t + 1, total_reward_vec.mean()))
-            total_reward_vec = np.hstack((total_reward_vec[1:],
-                                          episode_reward))  #record a reward
-            if islearned == 1:  #if learning has finished
-                final_x[episode, 0] = observation[0] #contain the value of final x
-            break
-
-    if (total_reward_vec.mean() >=
-            goal_average_reward):  # if the rewards of the most recent 100 episodes is larger than normal rewards, success 
-        print('Episode %d train agent successfuly!' % episode)
-        islearned = 1
-        #np.savetxt('learned_Q_table.csv',q_table, delimiter=",") #if save Q-table
-        if isrender == 0:
-            #env = wrappers.Monitor(env, './movie/cartpole-experiment-1') #if save the movie
-            isrender = 1
-
-    #np.savetxt('final_x.csv', final_x, delimiter=",")
+    np.savetxt('action_theta.csv', action, delimiter=",")
+    np.savetxt('reward_seq.csv', rewards, delimiter=",")
