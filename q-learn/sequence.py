@@ -1,6 +1,7 @@
 # coding:utf-8
 
 import numpy as np
+import sys
 
 # reward function
 def calc_reward(state, state_predict, mode):
@@ -19,7 +20,7 @@ def calc_reward(state, state_predict, mode):
         reward = np.mean(np.dot(c,d_face),axis=1)
 
     elif mode == 'heuristic':
-        reward = np.mean(np.dot(h,face),axis=1))
+        reward = np.mean(np.dot(h,face),axis=1)
 
     elif mode == 'predict':
         e_face = face_predict - face
@@ -31,4 +32,17 @@ def seq2feature(state):
     state_feature = np.mean(state, axis=1)
     return state_feature
 
+if __name__ == "__main__" :
+    argvs = sys.argv  # コマンドライン引数を格納したリストの取得
+
+    time_window = 10
+    num_face = 100
+    num_ir = 100
+
+    mode = argvs[1]
+
+    state = np.random.uniform(low=0,high=1,size=(num_face*5+num_ir,time_window))
+    state_predict = np.random.uniform(low=0,high=1,size=(num_face*5+num_ir,time_window))
+    reward = calc_reward(state,state_predict, mode)
+    print('reward',reward)
 
