@@ -43,7 +43,8 @@ q_table = np.random.uniform(low=0, high=1, size=(num_face*5+num_ir, num_action))
 
 #state = np.zeros((num_face*5+num_ir,t_window))
 state = np.zeros((type_face+type_ir,t_window))
-state_mean = np.zeros((num_face*5+num_ir,num_episodes))
+#state_mean = np.zeros((num_face*5+num_ir,num_episodes))
+state_mean = np.zeros((type_face+type_ir,num_episodes))
 action = np.zeros(num_episodes)
 reward = np.zeros(num_episodes)
 
@@ -67,9 +68,10 @@ for episode in range(num_episodes):  #repeat for number of trials
     for t in range(1,t_window):  #roup for 1 time window
         #next_state[t] = np.hstack((get_face(),get_ir()))
         state[:,t] = np.hstack((get_face(action[episode],'happy'),get_ir(state[type_face,t-1])))
-        #print(np.hstack((get_face(action[episode],'happy'),get_ir(state[type_face,t-1]))))
 
-    state_mean[episode]=seq2feature(state)
+    print('state_mean[episode]',state_mean[:,episode])
+    #print('state',state)
+    state_mean[:,episode]=seq2feature(state)
     # calcurate s_{t+1}, r_{t} etc based on selected/conducted action
     reward[episode] = calc_reward(state, state, t_window, mode)
 
