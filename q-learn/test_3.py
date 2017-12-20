@@ -2,6 +2,7 @@
 # http://neuro-educator.com/rl1/
 
 import numpy as np
+import random
 from sequence import *
 from hand_motion import *
 from dummy_evaluator import *
@@ -11,17 +12,23 @@ def get_action(next_state):
     #epsilon-greedy
     epsilon = 0.5
     if epsilon <= np.random.uniform(0, 1):
-        next_action = np.argmax(q_table[next_state])
+        next_action = np.argmax(q_table[neutral][happy][surprise][angry][sad][ir][action])
     else:
-        next_action = np.random.choice([0, 1])
+        next_action = random.sample(xrange(60))
     return next_action
 
 # [3]function which update Q-table
+# q_table[neutral][happy][surprise][angry][sad][ir][action]
 def update_Qtable(q_table, state, action, reward, next_state):
+    neutral, happy, surprise, angry, sad, ir, action = state
+    n_neutral, n_happy, n_surprise, n_angry, n_sad, n_ir, n_action = next_state
+
     gamma = 0.99
     alpha = 0.5
-    next_Max_Q=np.argmax(q_table[next_state])
-    q_table[state, action] = (1 - alpha) * q_table[state, action] +\
+    q_t = q_table[neutral][happy][surprise][angry][sad][ir][action]
+    next_Max_Q=np.argmax(q_table[neutral][happy][surprise][angry][sad][ir][action])
+    q_table[neutral][happy][surprise][angry][sad][ir][action]\
+            = (1 - alpha) * q_t +\
             alpha * (reward + gamma * next_Max_Q)
 
     return q_table
@@ -37,7 +44,16 @@ num_action = 60 #deg
 num_face = 100 #%
 num_ir = 100 #mm
 
-q_table = np.random.uniform(low=0, high=1, size=(num_face*5+num_ir, num_action))
+#q_table = np.random.uniform(low=0, high=1, size=(num_face*5+num_ir, num_action))
+q_table = np.random.uniform(low=0, high=1,
+        size=(num_face,
+            num_face,
+            num_face,
+            num_face,
+            num_face,
+            num_ir,
+            num_action))
+print('q_table',q_table)
 
 # [5] main tourine
 
@@ -49,7 +65,6 @@ action = np.zeros(num_episodes)
 reward = np.zeros(num_episodes)
 
 state[:,0] = np.array([100,0,0,0,0,30])
-#print('state_0',state[:,0])
 #action[0] = np.argmax(q_table[state])#TODO not enough
 action[0] = np.random.uniform(0,70)#TODO not enough
 
@@ -69,7 +84,7 @@ for episode in range(num_episodes):  #repeat for number of trials
         #next_state[t] = np.hstack((get_face(),get_ir()))
         state[:,t] = np.hstack((get_face(action[episode],'happy'),get_ir(state[type_face,t-1])))
 
-    print('state_mean[episode]',state_mean[:,episode])
+    #print('state_mean[episode]',state_mean[:,episode])
     #print('state',state)
     state_mean[:,episode]=seq2feature(state)
     # calcurate s_{t+1}, r_{t} etc based on selected/conducted action
@@ -78,12 +93,13 @@ for episode in range(num_episodes):  #repeat for number of trials
     # calcurate s_{t+1} and update q-table(as q-function)
     #q_table = update_Qtable(q_table, state[:,t-1], action[t], reward[t-1], state[:,t])
     if episode>0:
-        q_table = update_Qtable(q_table, state_mean[:,episode-1], action[episode], reward[episode-1], state_mean[:,episode])
+        q_table = update_Qtable(q_table, state_mean[:,episode-1], action[episode-1], reward[episode-1], state_mean[:,episode])
+        #TODO:the index is correct?
 
     # evaluate the next action a_{t+1}
     #action[t] = get_action(next_state)    # a_{t+1} 
     action[episode] = get_action(state_mean[:,episode])    # a_{t+1} 
-    before_state = state[:,t_window]
+    before_state = state[:,t_window-1]
 
 np.savetxt('action_pwm.csv', action, delimiter=",")
 np.savetxt('reward_seq.csv', rewards, delimiter=",")
