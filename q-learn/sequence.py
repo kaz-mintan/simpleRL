@@ -45,13 +45,9 @@ def seq2feature(state):
 
 if __name__ == "__main__" :
     argvs = sys.argv  # コマンドライン引数を格納したリストの取得
-
     time_window = 3
-
     mode = argvs[1]
-
     state = np.random.uniform(low=0,high=1,size=(num_face+num_ir,time_window))
-    #print('state',state)
     state_predict = np.random.uniform(low=0,high=1,size=(num_face+num_ir,time_window))
     #print('state_predict',state_predict)
 
