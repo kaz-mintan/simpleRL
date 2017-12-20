@@ -6,28 +6,39 @@ import random
 from sequence import *
 from hand_motion import *
 from dummy_evaluator import *
+from dizitize import *
 
 # [2]function which determine action a(t)
 def get_action(next_state):
+    d_next_state = digitize_state(next_state)
+    neutral, happy, surprise, angry, sad, ir = d_next_state
     #epsilon-greedy
     epsilon = 0.5
     if epsilon <= np.random.uniform(0, 1):
-        next_action = np.argmax(q_table[neutral][happy][surprise][angry][sad][ir][action])
+        #next_action = np.argmax(q_table[neutral,happy,surprise,angry,sad,ir,:])
+        next_action = np.argmax(q_table)
     else:
-        next_action = random.sample(xrange(60))
+        next_action = random.sample(xrange(60),1)
     return next_action
 
 # [3]function which update Q-table
 # q_table[neutral][happy][surprise][angry][sad][ir][action]
 def update_Qtable(q_table, state, action, reward, next_state):
-    neutral, happy, surprise, angry, sad, ir, action = state
-    n_neutral, n_happy, n_surprise, n_angry, n_sad, n_ir, n_action = next_state
+    d_state = digitize_state(state)
+    d_next_state = digitize_state(next_state)
+
+    neutral, happy, surprise, angry, sad, ir = d_state
+    n_neutral, n_happy, n_surprise, n_angry, n_sad, n_ir = d_next_state
 
     gamma = 0.99
     alpha = 0.5
-    q_t = q_table[neutral][happy][surprise][angry][sad][ir][action]
-    next_Max_Q=np.argmax(q_table[neutral][happy][surprise][angry][sad][ir][action])
-    q_table[neutral][happy][surprise][angry][sad][ir][action]\
+
+    q_t = q_table[neutral,happy,surprise,angry,sad,ir,action]
+    #next_Max_Q=np.argmax(q_table[neutral][happy][surprise][angry][sad][ir][action])
+    #next_Max_Q=max(q_table[n_neutral][n_happy][n_surprise][n_angry][n_sad][n_ir][n_action])
+    next_Max_Q=max(q_table)
+    #q_table[neutral][happy][surprise][angry][sad][ir][action]\
+    q_table[neutral,happy,surprise,angry,sad,ir,action]\
             = (1 - alpha) * q_t +\
             alpha * (reward + gamma * next_Max_Q)
 
@@ -40,23 +51,21 @@ num_episodes = 20  #number of all trials
 type_face = 5
 type_ir = 1
 
-num_action = 60 #deg
-num_face = 100 #%
-num_ir = 100 #mm
+num_face = 20 #5%
+num_ir = 20 #5mm
+num_action = 6 #10deg
 
 #q_table = np.random.uniform(low=0, high=1, size=(num_face*5+num_ir, num_action))
-q_table = np.random.uniform(low=0, high=1,
-        size=(num_face,
-            num_face,
-            num_face,
-            num_face,
-            num_face,
-            num_ir,
+q_table = np.random.uniform(low=0, high=1,\
+        size=(num_face,\
+            num_face,\
+            num_face,\
+            num_face,\
+            num_face,\
+            num_ir,\
             num_action))
-print('q_table',q_table)
 
 # [5] main tourine
-
 #state = np.zeros((num_face*5+num_ir,t_window))
 state = np.zeros((type_face+type_ir,t_window))
 #state_mean = np.zeros((num_face*5+num_ir,num_episodes))
