@@ -21,13 +21,19 @@ def type2num(str_type):
         num = None
     return num
 
-def get_face(theta, target_type):
+def get_face(action, target_type, nega_posi):
+    theta = action
+    #print('dummy_evaluator.py/action',action)
+    #print('dummy_evaluator.py/theta',theta)
     dummy_face = np.zeros(num_face)
     dev = np.zeros(num_face)
     dev[0]=0
 
     num = type2num(target_type)
-    dummy_face[num]=2.5 * theta
+    if nega_posi == 'posi':
+        dummy_face[num]=2.5 * theta
+    elif nega_posi == 'nega':
+        dummy_face[num]=100-2.5 * theta
     if int(100.0 - dummy_face[num]) > num_face-1 :
         dev[1:]=random.sample(xrange(int(100.0-dummy_face[num])),num_face-1)
         dev_sort = np.sort(dev)
