@@ -19,7 +19,10 @@ class Neural:
         self.error = numpy.zeros(epoch)
         N = X.shape[0]
         for epo in range(epoch):
+            #print('nn.py/X[0,:]',X[0,:])
             for i in range(N):
+                #print('nn.py/i',i)
+                #print('nn.py/X[i,:]',X[i,:])
                 x = X[i, :]
                 t = T[i, :]
 
@@ -85,14 +88,17 @@ class Neural:
 
 if __name__ == '__main__':
 
-    X = numpy.array([[0, 0.5,1], [0, 0.1,0.3], [1, 0,0.2], [1, 1,0.4]])
-    T = numpy.array([[1, 0], [0, 1], [0, 1], [1, 0]])
+    #X = numpy.array([[0, 0.5,1], [0, 0.1,0.3], [1, 0,0.2], [1, 1,0.4]])
+    #T = numpy.array([[1, 0], [0, 1], [0, 1], [1, 0]])
+    X = numpy.zeros((4,3))
+    T = numpy.zeros((4,2))
     #Y = numpy.array([[1], [0], [0.2], [0.4]])
     N = X.shape[0] # number of data
 
     input_size = X.shape[1]
     hidden_size = X.shape[1]
     output_size = T.shape[1]
+
     epsilon = 0.1
     mu = 0.9
     epoch = 10000
