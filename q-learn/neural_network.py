@@ -88,10 +88,11 @@ class Neural:
 
 if __name__ == '__main__':
 
-    #X = numpy.array([[0, 0.5,1], [0, 0.1,0.3], [1, 0,0.2], [1, 1,0.4]])
-    #T = numpy.array([[1, 0], [0, 1], [0, 1], [1, 0]])
-    X = numpy.zeros((4,3))
-    T = numpy.zeros((4,2))
+    print('1')
+    X = numpy.array([[2, 0.5,2], [0, 0.1,3], [1, 0,0.2], [1, 1,0.4]])
+    T = numpy.array([[1, 2], [3, 1], [0.5, 1], [1, 0]])
+    #X = numpy.zeros((4,3))
+    #T = numpy.zeros((4,2))
     #Y = numpy.array([[1], [0], [0.2], [0.4]])
     N = X.shape[0] # number of data
 
@@ -103,10 +104,13 @@ if __name__ == '__main__':
     mu = 0.9
     epoch = 10000
 
+    print('2')
     nn = Neural(input_size, hidden_size, output_size)
+    print('3')
     nn.train(X, T, epsilon, mu, epoch)
     #nn.error_graph()
 
+    print('4')
     #print('print',nn.predict(X,T))
     C, Y = nn.predict(X)
     print(C,Y)
