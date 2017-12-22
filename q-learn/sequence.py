@@ -22,7 +22,10 @@ def calc_reward(state, state_predict, time_window, mode):
     #return sum([x * (num_dizitized**i) for i, x in enumerate(digitized)])
     if mode == 'delta':
         c_face=np.zeros((num_face,time_window-1))
-        d_face = face_post - face[:,:time_window-2]
+        #print('sequence.py/time_window',time_window)
+        #print('sequence.py/face_post',face_post)
+        #print('sequence.py/face',face[:,:time_window-1])
+        d_face = face_post - face[:,:time_window-1]
         for face_type in range(num_face):
             c_face[face_type,:]=c[face_type]*d_face[face_type,:]
         reward = np.mean(c_face)
