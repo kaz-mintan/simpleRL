@@ -22,7 +22,8 @@ def type2num(str_type):
     return num
 
 def get_face(action, target_type, nega_posi):
-    theta = action
+    pwm, time = action#2nd ver
+    theta = pwm
     #print('dummy_evaluator.py/action',action)
     #print('dummy_evaluator.py/theta',theta)
     dummy_face = np.zeros(num_face)
