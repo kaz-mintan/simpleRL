@@ -21,9 +21,10 @@ def type2num(str_type):
         num = None
     return num
 
-def get_face(action, target_type, nega_posi):
-    pwm, time = action#2nd ver
-    theta = pwm
+def get_face(action, target_type, nega_posi, time, time_window):
+    #pwm, time = action#2nd ver
+    #theta = pwm
+    theta = action
     #print('dummy_evaluator.py/action',action)
     #print('dummy_evaluator.py/theta',theta)
     dummy_face = np.zeros(num_face)
@@ -32,9 +33,9 @@ def get_face(action, target_type, nega_posi):
 
     num = type2num(target_type)
     if nega_posi == 'posi':
-        dummy_face[num]=2.5 * theta
+        dummy_face[num]=2.5 * theta*time/time_window
     elif nega_posi == 'nega':
-        dummy_face[num]=100-2.5 * theta
+        dummy_face[num]=100-2.5 * theta*time/time_window
     if int(100.0 - dummy_face[num]) > num_face-1 :
         dev[1:]=random.sample(xrange(int(100.0-dummy_face[num])),num_face-1)
         dev_sort = np.sort(dev)
