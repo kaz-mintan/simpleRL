@@ -33,7 +33,7 @@ def assumed_face(present_face, limit_max, limit_min):
 
     if dt_face!=0:
         max_val = abs(dt_face)
-        #print('dt_face',dt_face)
+        print('dt_face',dt_face)
         dev_num[array_size-1]=max_val
 
         if max_val < array_size:
@@ -59,29 +59,34 @@ def assumed_face(present_face, limit_max, limit_min):
             if face_pt_array[face_num]<limit_min:
                 diff = limit_min - face_pt_array[face_num]
                 face_pt_array[face_num]=limit_min
-                face_pt_array[selected_num]-=diff
+
+                for buf in range(0,face_num):
+                    if buf!=selected_num:
+                        if face_pt_array[buf]>diff:
+                            print('buf', buf,'diff',diff)
+                            face_pt_array[buf]-=diff
+                            diff=0
+                        else:
+                            face_pt_array[buf]=limit_min
+                    else:
+                        print('if')
 
             if face_pt_array[face_num]>limit_max:
                 print('up')
-                diff = face_pt_array[face_num]-limit_max
-                face_pt_array[face_num]=limit_max
-                face_pt_array[selected_num]-=diff
 
             count=count+1
 
     return face_pt_array
 
 if __name__ == '__main__':
-    loop_val = 1000
+    loop_val = 20
     face_val = np.array([100,0,0,0,0])
     face_max = 100
     face_min = 0
     facial=np.zeros((loop_val,5))
     for i in range(loop_val):
         facial[i,:]=face_val
-        if face_val.sum()>100:
-            print(face_val, face_val.sum())
-            ref = raw_input()
+        print(face_val, face_val.sum())
         face_val= assumed_face(face_val,face_max,face_min)
 
     np.savetxt('test_face.csv',face_val,delimiter=',')

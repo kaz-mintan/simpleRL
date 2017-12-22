@@ -13,6 +13,12 @@ def assumed_z(present_z, limit_max, limit_min):
 
     return assumed_z
 
+def get_ir(present_z):
+    limit_max=100
+    limit_min=0
+    z = assumed_z(prezent_z,limit_max,limit_min)
+    return z
+
 if __name__ == '__main__':
     loop_val = 100
     z_depth = 0
