@@ -12,6 +12,7 @@ from datetime import datetime
 import sys
 
 select_episode = 10
+epsilon = 0.3# * (1 / (episode + 1))
 
 def normalization(array, val_max, val_min):
     x_max = np.max(array)
@@ -103,7 +104,8 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     acted = action[:,episode] = acted
     print('epi',episode,datetime.now(),'act',acted,'rew',rewed)
 
-    mode = 'heuristic'
+    #mode = 'heuristic'
+    mode = 'delta'
 
     if episode == 0:
         state[:,0] = np.array([100,0,0,0,0,30])
@@ -111,7 +113,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
         state[:,0] = before_state
 
     for t in range(1,t_window):  #roup for 1 time window
-        state[:,t] = np.hstack((get_face(action[:,episode],argvs[1],argvs[2]),get_ir(state[type_face,t-1])))
+        state[:,t] = np.hstack((get_face(action[:,episode],argvs[1],argvs[2],t,t_window),get_ir(state[type_face,t-1])))
 
     ### calcurate s_{t+1}
     state_mean[:,episode+1]=seq2feature(state)
@@ -131,7 +133,6 @@ for episode in range(num_episodes-1):  #repeat for number of trials
         C, possible_q[i]=Q_func.predict(p_array.T)
         #print('possible_a, possible_q',possible_a[i],possible_q[i])
 
-    epsilon = 0.8# * (1 / (episode + 1))
     #epsilon = volts(q_teacher,np.argmax(possible_q))
     print('epsilon',epsilon)
     if epsilon >= np.random.uniform(0, 1):
