@@ -5,7 +5,6 @@ import numpy as np
 from sequence import *
 from hand_motion import *
 from dummy_evaluator import *
-from dizitize import *
 from neural_network import *
 from datetime import datetime
 
@@ -40,11 +39,11 @@ def select_teach(input_array, q_teacher,episode,num=select_episode):
 argvs = sys.argv
 target_type = argvs[1]
 target_direct = argvs[2]
-print('arg',target_type,target_direct)
+mode = argvs[3]
 
 print('1',datetime.now())
 t_window = 30  #number of time window
-num_episodes = 100  #number of all trials
+num_episodes = 200  #number of all trials
 
 type_face = 5
 type_ir = 1
@@ -105,7 +104,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     print('epi',episode,datetime.now(),'act',acted,'rew',rewed)
 
     #mode = 'heuristic'
-    mode = 'delta'
+    mode = argvs[3]
 
     if episode == 0:
         state[:,0] = np.array([100,0,0,0,0,30])
@@ -176,4 +175,5 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     rewed = reward[episode]
 
 np.savetxt('action_pwm.csv', action[0,:], fmt="%.0f", delimiter=",")
-np.savetxt('reward_seq.csv', reward, fmt="%.0f", delimiter=",")
+np.savetxt('reward_seq.csv', reward, fmt="%.5f",delimiter=",")
+np.savetxt('situation.csv', state_mean.T,fmt="%.2f", delimiter=",")
