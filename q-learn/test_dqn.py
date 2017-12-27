@@ -8,6 +8,7 @@ from dummy_evaluator import *
 from neural_network import *
 from datetime import datetime
 
+
 import sys
 
 select_episode = 10
@@ -66,9 +67,11 @@ val_min = 0.2
 
 # [5] main tourine
 state = np.zeros((type_face+type_ir,t_window))
+state_before = np.zeros((type_face+type_ir,t_window))
 state_mean = np.zeros((type_face+type_ir,num_episodes))
 action = np.zeros((1,num_episodes))
 reward = np.zeros(num_episodes)
+random = np.zeros(num_episodes)
 
 print('3',datetime.now())
 state[:,0] = np.array([100,0,0,0,0,30])
@@ -96,12 +99,12 @@ print('6',datetime.now())
 Q_func.train(first_iteacher.T,first_oteacher.T,epsilon, mu, epoch)
 
 print('7',datetime.now())
-rewed= 0
+rewed= 0.0
 acted = action[:,0]
 
 for episode in range(num_episodes-1):  #repeat for number of trials
     acted = action[:,episode] = acted
-    print('epi',episode,datetime.now(),'act',acted,'rew',rewed)
+    print('epi',episode,target_type,target_direct,mode,'act',acted,'rew',rewed)
 
     #mode = 'heuristic'
     mode = argvs[3]
@@ -119,8 +122,8 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     #print('state_mean[:,episode]',state_mean[:,episode].T,state_mean)
 
     ### calcurate r_{t}
-    reward[episode] = calc_reward(state/num_face, state/num_face, t_window, mode)
-    print('reward',reward[episode])
+    reward[episode] = calc_reward(state/num_face, state/num_face, state_before/num_face,t_window, mode)
+    #print('reward',reward[episode])
 
     p_array= np.zeros((input_size,1))
     possible_q = np.zeros(num_action)
@@ -133,15 +136,16 @@ for episode in range(num_episodes-1):  #repeat for number of trials
         #print('possible_a, possible_q',possible_a[i],possible_q[i])
 
     #epsilon = volts(q_teacher,np.argmax(possible_q))
-    print('epsilon',epsilon)
-    if epsilon >= np.random.uniform(0, 1):
+    if epsilon <= np.random.uniform(0, 1):
         print('max')
+        random[episode+1]=1#maximize
         #next_action = np.argmax(q_table[next_state])
         action[:,episode+1]=np.argmax(possible_q)
     else:
         action[:,episode+1]=np.random.uniform(0,60)#TODO not enough
+        random[episode+1]=0#random
     #print('possible_q',possible_q)
-    print('action',action[:,episode+1])
+    #print('action',action[:,episode+1])
 
     ### update q-teacher(as q-function)
     ## calculate argmaxq_{t+1}
@@ -155,7 +159,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     ## calcurate updated q_{t}
     q_teacher[:,episode] = present_q[0,0] + alpha*(reward[episode]+gamma*(next_q-present_q[0,0]))
     #q_teacher[:,episode] = present_q + alpha*(reward[episode]+gamma*(next_q-present_q[0,0]))
-    print('q_teacher',q_teacher[:,episode])
+    #print('q_teacher',q_teacher[:,episode])
 
     ## update q_function
     input_array = np.zeros((input_size,episode))
@@ -173,7 +177,9 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     before_state = state[:,t_window-1]
     acted = action[:,episode+1]
     rewed = reward[episode]
+    state_before = state
 
 np.savetxt('action_pwm.csv', action[0,:], fmt="%.0f", delimiter=",")
 np.savetxt('reward_seq.csv', reward, fmt="%.5f",delimiter=",")
 np.savetxt('situation.csv', state_mean.T,fmt="%.2f", delimiter=",")
+np.savetxt('random_counter.csv', random,fmt="%.0f", delimiter=",")
