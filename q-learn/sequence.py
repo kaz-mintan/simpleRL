@@ -10,25 +10,27 @@ num_ir = 1
 # reward function
 def calc_reward(state, state_predict, state_before, time_window, mode):
     # coefficient
-    c = np.array([1,1,1,-1,-1]) #for delta mode
-    h = np.array([1,1,1,-1,-1]) #for heuristic mode
+    c = np.array([1.0,1.0,1.0,-1.0,-1.0]) #for delta mode
+    h = np.array([1.0,1.0,1.0,-1.0,-1.0]) #for heuristic mode
     reward = 0
 
     # extract face array (must be time sequence data)
     face = state[0:num_face,:] #in numpy, the 5 of the 0:5 is not included
-    face_before = state[0:num_face,:]
+    face_before = state_before[0:num_face,:]
+    #face_before = state[0:num_face,:]
     face_post = face[:,1:] #for delta mode
     face_predict = state_predict[0:num_face,:] #for predict mode
+    #print('sequence.py/face and face_before',face,face_before)
+
 
     #return sum([x * (num_dizitized**i) for i, x in enumerate(digitized)])
     if mode == 'delta':
-        c_face=np.zeros((num_face,time_window))
+        c_face=np.zeros(num_face)
+        c_face = np.mean(face,axis=1)-np.mean(face_before,axis=1)
         #d_face = face_post - face[:,:time_window-1]
-        d_face = face - face_before
-        #print('sequence.py/d_face',d_face)
-        for face_type in range(num_face):
-            c_face[face_type,:]=c[face_type]*d_face[face_type,:]
-        reward = np.mean(c_face)
+        #d_face = face - face_before
+        print('sequence.py/reward',reward)
+        reward = np.dot(c_face,c)
 
     elif mode == 'heuristic':
         h_face=np.zeros((num_face,time_window))

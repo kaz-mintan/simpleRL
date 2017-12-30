@@ -67,7 +67,7 @@ val_min = 0.2
 
 # [5] main tourine
 state = np.zeros((type_face+type_ir,t_window))
-state_before = np.zeros((type_face+type_ir,t_window))
+state_before = np.zeros_like(state)
 state_mean = np.zeros((type_face+type_ir,num_episodes))
 action = np.zeros((1,num_episodes))
 reward = np.zeros(num_episodes)
@@ -103,10 +103,10 @@ rewed= 0.0
 acted = action[:,0]
 
 for episode in range(num_episodes-1):  #repeat for number of trials
-    acted = action[:,episode] = acted
+    state = np.zeros_like(state_before)
+    acted = action[:,episode]
     print('epi',episode,target_type,target_direct,mode,'act',acted,'rew',rewed)
 
-    #mode = 'heuristic'
     mode = argvs[3]
 
     if episode == 0:
@@ -121,6 +121,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     state_mean[:,episode+1]=seq2feature(state)
     #print('state_mean[:,episode]',state_mean[:,episode].T,state_mean)
 
+    #print('state and state_before',state,state_before)
     ### calcurate r_{t}
     reward[episode] = calc_reward(state/num_face, state/num_face, state_before/num_face,t_window, mode)
     #print('reward',reward[episode])
@@ -144,8 +145,6 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     else:
         action[:,episode+1]=np.random.uniform(0,60)#TODO not enough
         random[episode+1]=0#random
-    #print('possible_q',possible_q)
-    #print('action',action[:,episode+1])
 
     ### update q-teacher(as q-function)
     ## calculate argmaxq_{t+1}
@@ -154,12 +153,9 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     ## calculate q_{t}
     p_array[:,0]=np.hstack((state_mean[:,episode]/num_face,action[:,episode]/num_action))
     C, present_q = Q_func.predict(p_array.T)
-    #present_q=inv_normalization(a, b, present_q)
 
     ## calcurate updated q_{t}
     q_teacher[:,episode] = present_q[0,0] + alpha*(reward[episode]+gamma*(next_q-present_q[0,0]))
-    #q_teacher[:,episode] = present_q + alpha*(reward[episode]+gamma*(next_q-present_q[0,0]))
-    #print('q_teacher',q_teacher[:,episode])
 
     ## update q_function
     input_array = np.zeros((input_size,episode))
@@ -172,7 +168,6 @@ for episode in range(num_episodes-1):  #repeat for number of trials
         selected_teacher = q_teacher[:,:episode]
 
     Q_func.train(selected_input,selected_teacher.T, epsilon, mu, epoch)
-    #print('input',input_array)
 
     before_state = state[:,t_window-1]
     acted = action[:,episode+1]

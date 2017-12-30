@@ -37,7 +37,8 @@ def get_face(action, target_type, nega_posi, time, time_window):
 
     if nega_posi == 'posi':
         #dummy_face[num]=(2.5 * theta+np.random.uniform(low=-1,high=1,size=1)
-        dummy_face[num]=(0.83 * theta+50)+np.random.uniform(low=-1,high=1,size=1)
+        dummy_face[num]=(0.83 * theta+50)+np.random.uniform(low=-10,high=10,size=1)
+        #print('dummy_evaluator.py/dummy_face',dummy_face[num])
     elif nega_posi == 'nega':
         #dummy_face[num]=100-2.5 * theta+np.random.uniform(low=-1,high=1,size=1)
         dummy_face[num]=(100-(0.83 * theta+50))+np.random.uniform(low=-1,high=1,size=1)
