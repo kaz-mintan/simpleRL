@@ -163,16 +163,27 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     q_teacher[:,episode] = present_q[0,0] + alpha*(reward[episode]+gamma*(next_q-present_q[0,0]))
 
     ## update q_function
-    input_array = np.zeros((q_input_size,episode))
-    input_array = np.hstack((((state_mean[:,:episode])/num_face).T,(action[:,:episode]/num_action).T))
+    q_input_array = np.zeros((q_input_size,episode))
+    q_input_array = np.hstack((((state_mean[:,:episode])/num_face).T,(action[:,:episode]/num_action).T))
 
     if episode>select_episode:
-        selected_input, selected_teacher = select_teach(input_array,q_teacher[:,:episode],episode)
+        q_selected_input, q_selected_teacher = select_teach(q_input_array,q_teacher[:,:episode],episode)
     else:
-        selected_input = input_array
-        selected_teacher = q_teacher[:,:episode]
+        q_selected_input = q_input_array
+        q_selected_teacher = q_teacher[:,:episode]
+    Q_func.train(q_selected_input,q_selected_teacher.T, epsilon, mu, epoch)
 
-    Q_func.train(selected_input,selected_teacher.T, epsilon, mu, epoch)
+    if mode == 'predict':
+        p_input_array = np.zeros((p_input_size,episode))
+        p_input_array = np.hstack((((state_mean[:,:episode])/num_face).T,(action[:,:episode]/num_action).T))
+        p_teacher[:,episode] = state_mean[:type_face,episode]
+
+        if episode>select_episode:
+            p_selected_input, p_selected_teacher = select_teach(p_input_array,p_teacher[:,:episode],episode)
+        else:
+            p_selected_input = p_input_array
+            p_selected_teacher = p_teacher[:,:episode]
+        P_func.train(p_selected_input,p_selected_teacher.T, epsilon, mu, epoch)
 
     before_state = state[:,t_window-1]
     acted = action[:,episode+1]

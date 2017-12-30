@@ -2,8 +2,9 @@
 
 import numpy as np
 import sys
+import math
 
-
+type_face = 5
 num_face = 5
 num_ir = 1
 
@@ -29,7 +30,6 @@ def calc_reward(state, state_predict, state_before, time_window, mode):
         c_face = np.mean(face,axis=1)-np.mean(face_before,axis=1)
         #d_face = face_post - face[:,:time_window-1]
         #d_face = face - face_before
-        print('sequence.py/reward',reward)
         reward = np.dot(c_face,c)
 
     elif mode == 'heuristic':
@@ -39,8 +39,10 @@ def calc_reward(state, state_predict, state_before, time_window, mode):
         reward = np.mean(h_face)
 
     elif mode == 'predict':
-        e_face = face_predict - face
-        reward = np.mean(e_face)
+        e_face = face_predict[0,:type_face] - np.mean(face,axis=1)
+        print('seq.py/face_predict',face_predict[0,:type_face])
+        print('seq.py/face',np.mean(face,axis=1))
+        reward = math.fabs(1.0/np.mean(e_face))
 
     return reward
 
