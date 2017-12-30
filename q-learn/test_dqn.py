@@ -81,16 +81,16 @@ possible_a = np.linspace(0,60,100)
 
 print('4',datetime.now())
 # set qfunction as nn
-input_size = type_face + type_ir + type_action
-output_size = 1
-hidden_size = (input_size + output_size )/3
+q_input_size = type_face + type_ir + type_action
+q_output_size = 1
+q_hidden_size = (q_input_size + q_output_size )/3
 
-q_teacher = np.zeros((output_size,num_episodes))
+q_teacher = np.zeros((q_output_size,num_episodes))
 
 print('5',datetime.now())
-Q_func = Neural(input_size, hidden_size, output_size)
-first_iteacher = np.random.uniform(low=0,high=1,size=(input_size,2))
-first_oteacher = np.random.uniform(low=0,high=1,size=(output_size,2))
+Q_func = Neural(q_input_size, q_hidden_size, q_output_size)
+first_iteacher = np.random.uniform(low=0,high=1,size=(q_input_size,2))
+first_oteacher = np.random.uniform(low=0,high=1,size=(q_output_size,2))
 
 #q_teacher[:,0]= first_oteacher[:,0]
 
@@ -119,28 +119,21 @@ for episode in range(num_episodes-1):  #repeat for number of trials
 
     ### calcurate s_{t+1}
     state_mean[:,episode+1]=seq2feature(state)
-    #print('state_mean[:,episode]',state_mean[:,episode].T,state_mean)
 
-    #print('state and state_before',state,state_before)
     ### calcurate r_{t}
     reward[episode] = calc_reward(state/num_face, state/num_face, state_before/num_face,t_window, mode)
-    #print('reward',reward[episode])
 
-    p_array= np.zeros((input_size,1))
+    p_array= np.zeros((q_input_size,1))
     possible_q = np.zeros(num_action)
 
     ### calcurate a_{t+1} based on s_{t+1}
     for i in range(num_action):
-        #print('possible_a[i]/num_action',possible_a[i]/num_action)
         p_array[:,0]=np.hstack((state_mean[:,episode+1]/num_face,possible_a[i]/num_action))
         C, possible_q[i]=Q_func.predict(p_array.T)
-        #print('possible_a, possible_q',possible_a[i],possible_q[i])
 
-    #epsilon = volts(q_teacher,np.argmax(possible_q))
     if epsilon <= np.random.uniform(0, 1):
         print('max')
         random[episode+1]=1#maximize
-        #next_action = np.argmax(q_table[next_state])
         action[:,episode+1]=np.argmax(possible_q)
     else:
         action[:,episode+1]=np.random.uniform(0,60)#TODO not enough
@@ -158,7 +151,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     q_teacher[:,episode] = present_q[0,0] + alpha*(reward[episode]+gamma*(next_q-present_q[0,0]))
 
     ## update q_function
-    input_array = np.zeros((input_size,episode))
+    input_array = np.zeros((q_input_size,episode))
     input_array = np.hstack((((state_mean[:,:episode])/num_face).T,(action[:,:episode]/num_action).T))
 
     if episode>select_episode:
