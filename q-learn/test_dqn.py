@@ -64,14 +64,15 @@ epoch = 1000
 val_max = 0.8
 val_min = 0.2
 
-
 # [5] main tourine
 state = np.zeros((type_face+type_ir,t_window))
 state_before = np.zeros_like(state)
+state_predict = np.zeros_like(state)
 state_mean = np.zeros((type_face+type_ir,num_episodes))
 action = np.zeros((1,num_episodes))
 reward = np.zeros(num_episodes)
 random = np.zeros(num_episodes)
+face_predict = np.zeros((1,type_face))
 
 print('3',datetime.now())
 state[:,0] = np.array([100,0,0,0,0,30])
@@ -80,25 +81,33 @@ action[:,0] = np.random.uniform(0,60)#TODO not enough
 possible_a = np.linspace(0,60,100)
 
 print('4',datetime.now())
-# set qfunction as nn
+## set qfunction as nn
 q_input_size = type_face + type_ir + type_action
 q_output_size = 1
 q_hidden_size = (q_input_size + q_output_size )/3
 
 q_teacher = np.zeros((q_output_size,num_episodes))
 
-print('5',datetime.now())
 Q_func = Neural(q_input_size, q_hidden_size, q_output_size)
-first_iteacher = np.random.uniform(low=0,high=1,size=(q_input_size,2))
-first_oteacher = np.random.uniform(low=0,high=1,size=(q_output_size,2))
+q_first_iteacher = np.random.uniform(low=0,high=1,size=(q_input_size,2))
+q_first_oteacher = np.random.uniform(low=0,high=1,size=(q_output_size,2))
 
-#q_teacher[:,0]= first_oteacher[:,0]
+Q_func.train(q_first_iteacher.T,q_first_oteacher.T,epsilon, mu, epoch)
 
-print('6',datetime.now())
+if mode == 'predict':
+    ## set predict function as nn
+    p_input_size = type_face + type_ir + type_action
+    p_output_size = type_face
+    p_hidden_size = (q_input_size + q_output_size )/3
 
-Q_func.train(first_iteacher.T,first_oteacher.T,epsilon, mu, epoch)
+    p_teacher = np.zeros((p_output_size,num_episodes))
 
-print('7',datetime.now())
+    P_func = Neural(p_input_size, p_hidden_size, p_output_size)
+    p_first_iteacher = np.random.uniform(low=0,high=1,size=(p_input_size,2))
+    p_first_oteacher = np.random.uniform(low=0,high=1,size=(p_output_size,2))
+
+    P_func.train(p_first_iteacher.T,p_first_oteacher.T,epsilon, mu, epoch)
+
 rewed= 0.0
 acted = action[:,0]
 
@@ -106,8 +115,6 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     state = np.zeros_like(state_before)
     acted = action[:,episode]
     print('epi',episode,target_type,target_direct,mode,'act',acted,'rew',rewed)
-
-    mode = argvs[3]
 
     if episode == 0:
         state[:,0] = np.array([100,0,0,0,0,30])
@@ -121,9 +128,9 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     state_mean[:,episode+1]=seq2feature(state)
 
     ### calcurate r_{t}
-    reward[episode] = calc_reward(state/num_face, state/num_face, state_before/num_face,t_window, mode)
+    reward[episode] = calc_reward(state/num_face, state_predict/num_face, state_before/num_face,t_window, mode)
 
-    p_array= np.zeros((q_input_size,1))
+    p_array= np.zeros((q_input_size,1)) #to stock predicted argument
     possible_q = np.zeros(num_action)
 
     ### calcurate a_{t+1} based on s_{t+1}
@@ -138,6 +145,11 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     else:
         action[:,episode+1]=np.random.uniform(0,60)#TODO not enough
         random[episode+1]=0#random
+
+    if mode == 'predict':
+        p_array[:,0]=np.hstack((state_mean[:,episode+1]/num_face,action[:,episode+1]/num_action))
+        C, face_predict =P_func.predict(p_array.T)
+        state_predict[0,:type_face] = face_predict
 
     ### update q-teacher(as q-function)
     ## calculate argmaxq_{t+1}
