@@ -15,6 +15,12 @@ def select_teach(input_array, q_teacher,episode,num=select_episode):
 
     return selected_input[0,:num,:], selected_output[:,:num]
 
+def conv_real2nn(array,num_array):
+    for action_row in range(array.shape[0]):
+        array[:,action_row]=array[:,action_row]/num_array[action_row]
+    return array
+
+
 class Neural:
 
     # constructor
@@ -70,8 +76,9 @@ class Neural:
         p_array= numpy.zeros((self.input_size,possible_a.shape[0])) #to stock predicted argument
         possible_q = numpy.zeros_like(possible_a)
 
-        for i in range(num_action):
+        for i in range(possible_a.shape[1]):
             p_array[:,0]=numpy.hstack((state_mean[:,episode+1]/num_face,possible_a[:,i]/num_action))
+            #p_array[:,0]=numpy.hstack((state_mean[:,episode+1]/num_face,conv_action[:,i]))
             C, possible_q[:,i:i+1]=self.predict(p_array.T)
 
         if random_rate <= numpy.random.uniform(0, 1):
@@ -90,6 +97,7 @@ class Neural:
     def update(self, state_mean, num_action, num_face, action, episode, q_teacher,
             reward, next_q, select_episode, gamma, alpha):
 
+        conv_action = conv_real2nn(action,num_action)
         # set input_array to predict
         p_array= numpy.zeros((self.input_size,1)) #to stock predicted argument
         p_array[:,0]=numpy.hstack((state_mean[:,episode]/num_face,action[:,episode]/num_action))
@@ -100,7 +108,8 @@ class Neural:
         # set input_array to train
         q_input_array = numpy.zeros((self.input_size,episode))
         q_input_array = numpy.hstack((((state_mean[:,:episode])/num_face).T,
-            (action[:,:episode]/num_action).T))
+            (conv_action[:,:episode]).T))
+            #(action[:,:episode]/num_action).T))
 
 
         q_teacher[:,episode] = present_q[0,0] + \

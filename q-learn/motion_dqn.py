@@ -21,7 +21,7 @@ type_action = 2
 
 num_face = 100 #%
 num_ir = 100 #5mm
-num_action = 60 #%:pwm
+num_action = np.array([40,50]) #%:pwm
 
 gamma = 0.9
 alpha = 0.5
@@ -75,7 +75,7 @@ face_predict = np.zeros((1,type_face))
 state[:,0] = np.array([100,0,0,0,0,30])
 action[:,0] = np.random.uniform(low=0,high=1,size=(1,type_action))
 
-possible_a = np.tile(np.linspace(0,60,100),(type_action,1))
+possible_a = np.tile(np.linspace(0,1,100),(type_action,1))
 
 # possible_a をタイルにして、type_action x 100の行列にする
 
@@ -128,12 +128,12 @@ for episode in range(num_episodes-1):  #repeat for number of trials
 
     ### calcurate a_{t+1} based on s_{t+1}
     random[episode+1], action[:,episode+1],next_q = Q_func.gen_action(possible_a,
-            num_action, num_face, state_mean, episode, type_action)
+            num_action,num_face, state_mean, episode, type_action)
 
-    q_teacher = Q_func.update(state_mean,num_action,num_face,action,episode,q_teacher,reward,next_q, select_episode, gamma, alpha)
+    q_teacher = Q_func.update(state_mean,num_action, num_face,action,episode,q_teacher,reward,next_q, select_episode, gamma, alpha)
 
     if mode == 'predict':
-        state_predict, p_teacher = P_func.predict_update(state_mean,num_action,
+        state_predict, p_teacher = P_func.predict_update(state_mean,
                 num_face,action, episode,p_teacher,reward,next_q,
                 select_episode, gamma, alpha)
 
@@ -141,7 +141,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     acted = action[:,episode+1]
     rewed = reward[episode]
     state_before = state
-    t_window = action[1,episode+1]
+    #print('time',action[1,episode+1])
 
 np.savetxt('action_pwm.csv', action[0,:], fmt="%.0f", delimiter=",")
 np.savetxt('reward_seq.csv', reward, fmt="%.5f",delimiter=",")
