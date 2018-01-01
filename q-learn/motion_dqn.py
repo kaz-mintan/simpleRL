@@ -141,6 +141,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     acted = action[:,episode+1]
     rewed = reward[episode]
     state_before = state
+    t_window = action[1,episode+1]
 
 np.savetxt('action_pwm.csv', action[0,:], fmt="%.0f", delimiter=",")
 np.savetxt('reward_seq.csv', reward, fmt="%.5f",delimiter=",")
