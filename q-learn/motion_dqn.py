@@ -133,7 +133,8 @@ for episode in range(num_episodes-1):  #repeat for number of trials
     q_teacher = Q_func.update(state_mean,num_action, num_face,action,episode,q_teacher,reward,next_q, select_episode, gamma, alpha)
 
     if mode == 'predict':
-        state_predict, p_teacher = P_func.predict_update(state_mean,
+        state_predict, p_teacher = P_func.predict_update(state_mean, 
+                state_predict, num_action,
                 num_face,action, episode,p_teacher,reward,next_q,
                 select_episode, gamma, alpha)
 
