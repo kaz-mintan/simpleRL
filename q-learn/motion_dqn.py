@@ -117,7 +117,6 @@ for episode in range(num_episodes-1):  #repeat for number of trials
 
     for t in range(1,t_window):  #roup for 1 time window
         #state[:,t] = get_sensor()
-        print(sensor.get_sensor())
         state[:,t] = np.hstack((get_face(action[:,episode],argvs[1],argvs[2],t,t_window),get_ir(state[type_face,t-1])))
 
     ### calcurate s_{t+1} based on the value of sensors
@@ -129,7 +128,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
 
     ### calcurate a_{t+1} based on s_{t+1}
     random[episode+1], action[:,episode+1],next_q = Q_func.gen_action(possible_a,
-            num_action, num_face, state_mean, episode)
+            num_action, num_face, state_mean, episode, type_action)
 
     q_teacher = Q_func.update(state_mean,num_action,num_face,action,episode,q_teacher,reward,next_q, select_episode, gamma, alpha)
 

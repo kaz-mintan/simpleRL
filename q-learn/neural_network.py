@@ -1,8 +1,12 @@
 import numpy
 import math
 import random
+import itertools
 #from matplotlib import pyplot
 select_episode = 10
+
+def argmax_ndim(arg_array):
+    return numpy.unravel_index(arg_array.argmax(), arg_array.shape)
 
 def select_teach(input_array, q_teacher,episode,num=select_episode):
     index_array = numpy.argsort(q_teacher)[::-1]
@@ -60,20 +64,23 @@ class Neural:
 
         return (C, Y)
 
-    def gen_action(self, possible_a, num_action, num_face, state_mean, episode):
+    def gen_action(self, possible_a, num_action, num_face, state_mean, episode,type_action):
         random_rate = 0.3# * (1 / (episode + 1))
-        p_array= numpy.zeros((self.input_size,1)) #to stock predicted argument
-        possible_q = numpy.zeros(num_action)
+        #p_array= numpy.zeros((self.input_size,1)) #to stock predicted argument
+        p_array= numpy.zeros((self.input_size,possible_a.shape[0])) #to stock predicted argument
+        possible_q = numpy.zeros_like(possible_a)
 
         for i in range(num_action):
-            p_array[:,0]=numpy.hstack((state_mean[:,episode+1]/num_face,possible_a[i]/num_action))
-            C, possible_q[i]=self.predict(p_array.T)
+            p_array[:,0]=numpy.hstack((state_mean[:,episode+1]/num_face,possible_a[:,i]/num_action))
+            C, possible_q[:,i:i+1]=self.predict(p_array.T)
 
         if random_rate <= numpy.random.uniform(0, 1):
             random=1#maximize
-            action=numpy.argmax(possible_q)
+            action=argmax_ndim(possible_q)
+            print('nn/argmax',action)
         else:
-            action=numpy.random.uniform(0,60)#TODO not enough
+            #action=numpy.random.uniform(0,60)#TODO not enough
+            action = numpy.random.uniform(low=0,high=1,size=(1,type_action))
             random=0 #random
 
         next_q=numpy.max(possible_q)
