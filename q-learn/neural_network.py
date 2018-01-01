@@ -2,23 +2,39 @@ import numpy
 import math
 import random
 #from matplotlib import pyplot
+select_episode = 10
+
+def select_teach(input_array, q_teacher,episode,num=select_episode):
+    index_array = numpy.argsort(q_teacher)[::-1]
+    selected_input = input_array[index_array]
+    selected_output = numpy.sort(q_teacher)[::-1]
+
+    return selected_input[0,:num,:], selected_output[:,:num]
 
 class Neural:
 
     # constructor
-    def __init__(self, n_input, n_hidden, n_output):
+    def __init__(self, n_input, n_hidden, n_output, epsilon, mu, epoch):
         self.hidden_weight = numpy.random.random_sample((n_hidden, n_input + 1))
         self.output_weight = numpy.random.random_sample((n_output, n_hidden + 1))
         self.hidden_momentum = numpy.zeros((n_hidden, n_input + 1))
         self.output_momentum = numpy.zeros((n_output, n_hidden + 1))
         self.output_num = n_output
 
+        self.epsilon = epsilon
+        self.mu = mu
+        self.epoch = epoch
+
+        self.input_size = n_input
+        self.output_size = n_output
+
 
 # public method
-    def train(self, X, T, epsilon, mu, epoch):
-        self.error = numpy.zeros(epoch)
+    #def train(self, X, T, epsilon, mu, epoch):
+    def train(self, X, T):
+        self.error = numpy.zeros(self.epoch)
         N = X.shape[0]
-        for epo in range(epoch):
+        for epo in range(self.epoch):
             #print('nn.py/X[0,:]',X[0,:])
             for i in range(N):
                 #print('nn.py/i',i)
@@ -26,10 +42,9 @@ class Neural:
                 x = X[i, :]
                 t = T[i, :]
 
-                self.__update_weight(x, t, epsilon, mu)
+                self.__update_weight(x, t, self.epsilon, self.mu)
 
             self.error[epo] = self.__calc_error(X, T)
-
 
     def predict(self, X):
         N = X.shape[0]
@@ -44,6 +59,79 @@ class Neural:
             C[i] = y.argmax()
 
         return (C, Y)
+
+    def gen_action(self, possible_a, num_action, num_face, state_mean, episode):
+        random_rate = 0.3# * (1 / (episode + 1))
+        p_array= numpy.zeros((self.input_size,1)) #to stock predicted argument
+        possible_q = numpy.zeros(num_action)
+
+        for i in range(num_action):
+            p_array[:,0]=numpy.hstack((state_mean[:,episode+1]/num_face,possible_a[i]/num_action))
+            C, possible_q[i]=self.predict(p_array.T)
+
+        if random_rate <= numpy.random.uniform(0, 1):
+            random=1#maximize
+            action=numpy.argmax(possible_q)
+        else:
+            action=numpy.random.uniform(0,60)#TODO not enough
+            random=0 #random
+
+        next_q=numpy.max(possible_q)
+
+        return random, action, next_q
+
+    def update(self, state_mean, num_action, num_face, action, episode, q_teacher,
+            reward, next_q, select_episode, gamma, alpha):
+
+        # set input_array to predict
+        p_array= numpy.zeros((self.input_size,1)) #to stock predicted argument
+        p_array[:,0]=numpy.hstack((state_mean[:,episode]/num_face,action[:,episode]/num_action))
+
+        # calculate present_q based on present state value
+        C, present_q = self.predict(p_array.T)
+
+        # set input_array to train
+        q_input_array = numpy.zeros((self.input_size,episode))
+        q_input_array = numpy.hstack((((state_mean[:,:episode])/num_face).T,
+            (action[:,:episode]/num_action).T))
+
+
+        q_teacher[:,episode] = present_q[0,0] + \
+                alpha*(reward[episode]+gamma*(next_q-present_q[0,0]))
+
+        if episode>select_episode:
+            q_selected_input, q_selected_teacher = select_teach(q_input_array,
+                    q_teacher[:,:episode],episode)
+        else:
+            q_selected_input = q_input_array
+            q_selected_teacher = q_teacher[:,:episode]
+
+        self.train(q_selected_input,q_selected_teacher.T)
+        return q_teacher
+
+    def predict_update(self, state_mean, num_action, num_face, action, episode, q_teacher,
+            reward, next_q, select_episode, gamma, alpha):
+
+        p_array[:,0]=numpy.hstack((state_mean[:,episode+1]/num_face,
+            action[:,episode+1]/num_action))
+        C, face_predict =P_func.predict(p_array.T)
+        state_predict[0,:type_face] = face_predict
+
+        p_input_array = numpy.zeros((p_input_size,episode))
+        p_input_array = numpy.hstack((((state_mean[:,:episode])/num_face).T,
+            (action[:,:episode]/num_action).T))
+        p_teacher[:,episode] = state_mean[:type_face,episode]
+
+        if episode>select_episode:
+            p_selected_input, p_selected_teacher = select_teach(p_input_array,
+                    p_teacher[:,:episode],episode)
+        else:
+            p_selected_input = p_input_array
+            p_selected_teacher = p_teacher[:,:episode]
+
+        P_func.train(p_selected_input,p_selected_teacher.T)
+        return state_predict, p_teacher
+
 
 # private method
     def __sigmoid(self, arr):
