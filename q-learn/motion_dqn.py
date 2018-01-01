@@ -109,8 +109,6 @@ if mode == 'predict':
 rewed= 0.0
 acted = action[:,0]
 
-sensor= GetSensor(host, port)
-
 # main loop
 for episode in range(num_episodes-1):  #repeat for number of trials
     state = np.zeros_like(state_before)
