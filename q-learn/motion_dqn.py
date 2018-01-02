@@ -117,7 +117,7 @@ for episode in range(num_episodes-1):  #repeat for number of trials
 
     for t in range(1,t_window):  #roup for 1 time window
         #state[:,t] = get_sensor()
-        state[:,t] = np.hstack((get_face(action[:,episode],argvs[1],argvs[2],t,t_window),get_ir(state[type_face,t-1])))
+        state[:,t] = np.hstack((get_face(action[:,episode],state_mean[:,episode],argvs[1],argvs[2],t,t_window),get_ir(state[type_face,t-1])))
 
     ### calcurate s_{t+1} based on the value of sensors
     state_mean[:,episode+1]=seq2feature(state)
